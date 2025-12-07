@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ar" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>عداد متعدد</title>
+<style>
+:root { --btn-bg-light: #fff; --btn-text-light: #000; --btn-text-dark: #fff; }
+
+html,body{height:100%;margin:0}
+body{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  background:#f7f7fb;
+  user-select:none;
+  cursor:pointer;
+  padding:2rem 1rem;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.3s ease;
+}
+html[data-theme="dark"] body{ background:#0f0f11; color:white; }
+
+.counter-box{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin:1rem;
+  padding:1rem 2rem;
+  border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(250,250,255,0.9));
+  box-shadow:0 8px 24px rgba(16,24,40,0.08);
+  transition: background 0.3s ease;
+  min-width:150px;
+}
+html[data-theme="dark"] .counter-box{
+  background:rgba(40,40,45,0.9);
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  color:white;
+}
+
+.counter-name, #newCounterName{
+  font-weight:600; 
+  margin-bottom:0.5rem; 
+  font-size:1rem; 
+  cursor:text;
+  border:none;
+  background: transparent;
+  outline: none;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: box-shadow 0.2s ease;
+  display: inline-block;
+  min-width: 20px;
+  width: auto;
+  text-align: center;
+  color: black;
+}
+html[data-theme="dark"] .counter-name, html[data-theme="dark"] #newCounterName {
+  color: white !important;
+}
+html[data-theme="light"] .counter-name, html[data-theme="light"] #newCounterName {
+  color: black !important;
+}
+.counter-name:focus, #newCounterName:focus{
+  box-shadow: 0 0 0 2px black;
+  background: rgba(255,255,255,0.8);
+}
+html[data-theme="dark"] .counter-name:focus, html[data-theme="dark"] #newCounterName:focus{
+  box-shadow: 0 0 0 2px white;
+  background: rgba(255,255,255,0.1);
+}
+
+.counter-value-container{ position:relative; display:flex; align-items:center; justify-content:center; gap:5px; width:100%; }
+.counter-value{ font-size:2rem; font-weight:700; min-width:40px; text-align:center; }
+
+.hint{ font-size:0.9rem; color:#6b7280; margin-top:0.3rem; }
+
+.controls{ display:flex; gap:1rem; margin-bottom:1rem; }
+
+button{ outline:none; }
+
+.circle-button{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease, transform 0.1s ease, color 0.3s ease;
+  background-color: var(--btn-bg-light);
+  color: var(--btn-text-light);
+}
+html[data-theme="dark"] .circle-button { color: var(--btn-text-dark); }
+.circle-button:hover { box-shadow:0 4px 12px rgba(0,0,0,0.3); transform:scale(1.05); }
+.circle-button:active{ transform:translateY(1px); }
+
+#toggleDark::before, #addCounter::before, .reset-btn::before, .delete-btn::before { 
+  content:''; display:block; background-size:contain; background-repeat:no-repeat; background-position:center; 
+}
+html[data-theme="light"] #toggleDark::before { width:24px; height:24px; background-image:url('https://i.imgur.com/QmzOKtT.png'); }
+html[data-theme="dark"] #toggleDark::before { width:24px; height:24px; background-image:url('https://i.imgur.com/IDra4kM.png'); }
+html[data-theme="light"] #addCounter::before { width:24px; height:24px; background-image:url('https://i.imgur.com/iLwnstZ.png'); }
+html[data-theme="dark"] #addCounter::before { width:24px; height:24px; background-image:url('https://i.imgur.com/ZSp0qx2.png'); }
+
+.reset-btn{
+  position:absolute;
+  top:5px;
+  right:5px;
+  width:25px;
+  height:25px;
+  border:none;
+  border-radius:50%;
+  background-color: transparent;
+  box-shadow: none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition: transform 0.1s ease;
+}
+.reset-btn:active{ transform:translateY(1px); }
+.reset-btn::before { width:100%; height:100%; }
+html[data-theme="light"] .reset-btn::before { background-image:url('https://i.imgur.com/eDb7UgC.png'); }
+html[data-theme="dark"] .reset-btn::before { background-image:url('https://i.imgur.com/DAyOZI8.png'); }
+
+.delete-btn{
+  position:absolute;
+  top:5px;
+  left:5px;
+  width:25px;
+  height:25px;
+  border:none;
+  border-radius:50%;
+  background-color: transparent;
+  box-shadow: none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition: transform 0.1s ease;
+}
+.delete-btn:active{ transform:translateY(1px); }
+.delete-btn::before { width:100%; height:100%; }
+html[data-theme="light"] .delete-btn::before { background-image:url('https://i.imgur.com/EqYzFzA.png'); }
+html[data-theme="dark"] .delete-btn::before { background-image:url('https://i.imgur.com/stBE3T1.png'); }
+
+body > .counters{ display:flex; flex-wrap:wrap; justify-content:center; }
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  min-width: 250px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  gap: 1rem;
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+.modal.show .modal-content { transform: scale(1); }
+html[data-theme="dark"] .modal-content {
+  background: #1a1a1a;
+  color: white;
+}
+.modal-content input {
+  padding: 2px 4px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  text-align:center;
+}
+
+.error-msg {
+  color: red;
+  font-size: 0.9rem;
+  display: none;
+  text-align: center;
+}
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 40px; /* increased distance between confirm and cancel */
+}
+
+/* Confirm and Cancel buttons only show images */
+#confirmCounter, #cancelCounter{
+  width: 40px;
+  height: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 50%;
+  border: none;
+  background-color: transparent; /* invisible button */
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+#confirmCounter:active, #cancelCounter:active{ transform: translateY(1px); }
+
+html[data-theme="light"] #confirmCounter { background-image: url('https://i.imgur.com/mV0rn5a.png'); }
+html[data-theme="dark"] #confirmCounter { background-image: url('https://i.imgur.com/9xODWpT.png'); }
+html[data-theme="light"] #cancelCounter { background-image: url('https://i.imgur.com/Mt75ziI.png'); }
+html[data-theme="dark"] #cancelCounter { background-image: url('https://i.imgur.com/grx0wds.png'); }
+
+</style>
+</head>
+<body>
+<div class="controls">
+  <button id="toggleDark" class="circle-button" aria-label="تبديل الوضع"></button>
+  <button id="addCounter" class="circle-button" aria-label="إضافة عداد"></button>
+</div>
+
+<div class="counters" id="counters"></div>
+
+<!-- Add Counter Modal -->
+<div id="addCounterModal" class="modal hidden">
+  <div class="modal-content">
+    <input type="text" id="newCounterName" placeholder="اسم العداد" maxlength="31" />
+    <div id="nameError" class="error-msg"><span dir="rtl">! الرجاء إدخال اسم للعداد</span></div>
+    <div class="modal-buttons">
+      <button id="cancelCounter"></button>
+      <button id="confirmCounter"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const html = document.documentElement;
+  const countersContainer = document.getElementById('counters');
+  const toggleDark = document.getElementById('toggleDark');
+  const addCounterBtn = document.getElementById('addCounter');
+
+  const addCounterModal = document.getElementById('addCounterModal');
+  const newCounterNameInput = document.getElementById('newCounterName');
+  const cancelCounterBtn = document.getElementById('cancelCounter');
+  const confirmCounterBtn = document.getElementById('confirmCounter');
+  const nameError = document.getElementById('nameError');
+
+  function getCounterBoxColor() {
+    const temp = document.createElement('div');
+    temp.className = 'counter-box';
+    temp.style.visibility='hidden';
+    document.body.appendChild(temp);
+    const color = getComputedStyle(temp).backgroundColor;
+    document.body.removeChild(temp);
+    return color;
+  }
+
+  function updateButtonColors(){
+    const isDark = html.getAttribute('data-theme')==='dark';
+    const bg = isDark ? getCounterBoxColor() : '#fff';
+    document.querySelectorAll('.circle-button').forEach(btn=>{
+      btn.style.backgroundColor = bg;
+      btn.style.color = isDark ? '#fff' : '#000';
+    });
+  }
+
+  toggleDark.addEventListener('click', e=>{
+    e.stopPropagation();
+    html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark'?'light':'dark');
+    updateButtonColors();
+  });
+
+  addCounterBtn.addEventListener('click', e=>{
+    e.stopPropagation();
+    newCounterNameInput.value = '';
+    nameError.style.display = 'none';
+    addCounterModal.classList.remove('hidden');
+    setTimeout(()=>addCounterModal.classList.add('show'), 10);
+    updateInputWidth(newCounterNameInput);
+    newCounterNameInput.focus();
+  });
+
+  cancelCounterBtn.addEventListener('click', e=>{
+    addCounterModal.classList.remove('show');
+    setTimeout(()=>addCounterModal.classList.add('hidden'), 300);
+  });
+
+  confirmCounterBtn.addEventListener('click', e=>{
+    const name = newCounterNameInput.value.trim();
+    if(!name){
+      nameError.style.display='block';
+      return;
+    }
+    nameError.style.display='none';
+    addCounter(name);
+    addCounterModal.classList.remove('show');
+    setTimeout(()=>addCounterModal.classList.add('hidden'), 300);
+  });
+
+  newCounterNameInput.addEventListener('input', e => {
+    nameError.style.display = 'none';
+    updateInputWidth(newCounterNameInput);
+  });
+
+  newCounterNameInput.addEventListener('keypress', e=>{
+    if(e.key==='Enter') confirmCounterBtn.click();
+  });
+
+  function updateInputWidth(input) {
+    const tempSpan = document.createElement('span');
+    tempSpan.style.visibility = 'hidden';
+    tempSpan.style.position = 'absolute';
+    tempSpan.style.font = window.getComputedStyle(input).font;
+    tempSpan.textContent = input.value || input.placeholder;
+    document.body.appendChild(tempSpan);
+    input.style.width = (tempSpan.offsetWidth + 10) + 'px';
+    document.body.removeChild(tempSpan);
+  }
+
+  function addCounter(name) {
+    const box = document.createElement('div');
+    box.className = 'counter-box';
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'reset-btn';
+    resetBtn.type = 'button';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.type = 'button';
+
+    const counterName = document.createElement('input');
+    counterName.className = 'counter-name';
+    counterName.value = name;
+    counterName.setAttribute('maxlength', '31');
+
+    updateInputWidth(counterName);
+    counterName.addEventListener('input', e => updateInputWidth(counterName));
+
+    const counterContainer = document.createElement('div');
+    counterContainer.className = 'counter-value-container';
+
+    const counterValue = document.createElement('div');
+    counterValue.className = 'counter-value';
+    counterValue.textContent = 0;
+
+    counterContainer.appendChild(counterValue);
+
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = 'انقر على يسار الرقم لتقليل، يمين الرقم لزيادة';
+
+    box.appendChild(deleteBtn);
+    box.appendChild(resetBtn);
+    box.appendChild(counterName);
+    box.appendChild(counterContainer);
+    box.appendChild(hint);
+
+    countersContainer.appendChild(box);
+    updateButtonColors();
+
+    box.addEventListener('click', e=>{
+      if(e.target===resetBtn || e.target===deleteBtn || e.target===counterName) return;
+      const rect = counterValue.getBoundingClientRect();
+      const clickX = e.clientX;
+
+      if(clickX<rect.left) counterValue.textContent = Math.max(0, parseInt(counterValue.textContent)-1);
+      else counterValue.textContent = parseInt(counterValue.textContent)+1;
+
+      counterValue.style.transform='scale(1.3)';
+      setTimeout(()=>{counterValue.style.transform='scale(1)';},150);
+    });
+
+    resetBtn.addEventListener('click', e=>{
+      e.stopPropagation();
+      counterValue.textContent=0;
+    });
+
+    deleteBtn.addEventListener('click', e=>{
+      e.stopPropagation();
+      box.remove();
+    });
+  }
+
+  updateButtonColors();
+})();
+</script>
+</body>
+</html>
